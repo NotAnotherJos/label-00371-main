@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  mcp-puppeteer-client:
+    build:
+      context: ./mcp-puppeteer-client
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    container_name: mcp-puppeteer-client
+    restart: unless-stopped
+    volumes:
+      - ./mcp-puppeteer-client/screenshots:/app/screenshots
+      - ./mcp-puppeteer-client/logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    # 注意：MCP Puppeteer 需要在本地运行，Docker 主要用于开发环境
+    # 生产环境建议直接在主机上运行
+    networks:
+      - mcp-network
+    # 共享内存大小，Chromium 需要
+    shm_size: "2gb"
+    # 安全配置
+    security_opt:
+      - no-new-privileges:true
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+networks:
+  mcp-network:
+    driver: bridge
